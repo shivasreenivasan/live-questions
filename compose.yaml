@@ -1,0 +1,39 @@
+# docker compose up -d
+# Put the presenter key in .env (gitignored; see .env.example):
+#   PRESENTER_KEY=some-long-random-string
+# Update with: docker compose pull && docker compose up -d
+services:
+  live-questions:
+    # Published by CI. `latest` is the newest release; pin a release (1.2.0)
+    # or a major version (1) to update on your own schedule, or use `main`
+    # for the current main branch.
+    image: ghcr.io/seandavi/quarto-revealjs-live-questions:latest
+    # To run your own changes, build from this checkout instead:
+    # docker compose up -d --build
+    # build: .
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      PORT: "8787"
+      DATA_DIR: /data
+    ports:
+      - "8787:8787"
+    volumes:
+      - live-questions-data:/data
+    # Behind Traefik instead of a published port (drop `ports:` above).
+    # WebSockets need no extra Traefik configuration.
+    # labels:
+    #   - traefik.enable=true
+    #   - traefik.http.routers.live-questions.rule=Host(`poll.example.org`)
+    #   - traefik.http.routers.live-questions.entrypoints=websecure
+    #   - traefik.http.routers.live-questions.tls.certresolver=letsencrypt
+    #   - traefik.http.services.live-questions.loadbalancer.server.port=8787
+    # networks:
+    #   - traefik
+
+volumes:
+  live-questions-data:
+
+# networks:
+#   traefik:
+#     external: true
